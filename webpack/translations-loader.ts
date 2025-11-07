@@ -23,46 +23,44 @@
  * }
  */
 /* eslint-disable array-callback-return */
-function translationFlatten (object: any, currentKeys: any[] = []) {
+function translationFlatten(object: any, currentKeys: any[] = []) {
     const res = {} as any
-  
-    Object.keys(object).map(
-      key => {
+
+    Object.keys(object).map((key) => {
         const value = object[key]
-  
-        if (typeof value === 'object') {
-          if (value.title && value.value) {
-            const flattenedKey = [...currentKeys, key].join('.')
-            res[flattenedKey] = value.value
-          } else {
-            Object.assign(
-              res,
-              translationFlatten(value, [...currentKeys, key])
-            )
-          }
+
+        if (typeof value === "object") {
+            if (value.title && value.value) {
+                const flattenedKey = [...currentKeys, key].join(".")
+                res[flattenedKey] = value.value
+            } else {
+                Object.assign(
+                    res,
+                    translationFlatten(value, [...currentKeys, key]),
+                )
+            }
         } else {
-          const flattenedKey = [...currentKeys, key].join('.')
-          res[flattenedKey] = value
+            const flattenedKey = [...currentKeys, key].join(".")
+            res[flattenedKey] = value
         }
-      }
-    )
-  
+    })
+
     return res
-  }
-  /* eslint-enable array-callback-return */
-  
-  function TranslationsLoader (content: any) {
+}
+/* eslint-enable array-callback-return */
+
+function TranslationsLoader(content: any) {
     let translationsInput
     try {
-      translationsInput = JSON.parse(content)
+        translationsInput = JSON.parse(content)
     } catch (error) {
-      console.error(error)
-      process.exit(1)
+        console.error(error)
+        process.exit(1)
     }
-  
+
     const compiledTranslations = translationFlatten(translationsInput)
-  
+
     return `module.exports = ${JSON.stringify(compiledTranslations)}`
-  }
-  
-  module.exports = TranslationsLoader
+}
+
+module.exports = TranslationsLoader
