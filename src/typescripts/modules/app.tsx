@@ -50,7 +50,12 @@ interface ButtonProps {
 
 const Button: React.FC<ButtonProps> = ({ setResult }) => (
   <button 
-    onClick={() => setResult("Button was clicked!")}
+    onClick={async () => {
+        const catFact = await fetchCatFact()
+        if (typeof catFact != "string") {
+            return
+        }
+        setResult(catFact)}}
     className="mt-4 px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
   >
     Set Result Manually
