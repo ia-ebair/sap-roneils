@@ -95,8 +95,8 @@ const MainWindow: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-8 max-w-lg mx-auto bg-gray-50 min-h-screen font-sans">
-      <Header />
+    <div className="p-8 max-w-lg mx-auto bg-gray-50 max-h-full font-sans">
+      {/* <Header /> */}
       <Label result={result} darkMode={true} />
       <Button setResult={setResult}/>
       <div>
