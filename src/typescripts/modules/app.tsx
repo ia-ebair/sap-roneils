@@ -8,7 +8,7 @@ import { ThemeProvider, DEFAULT_THEME } from "@zendeskgarden/react-theming"
 import { resizeContainer } from "../lib/helpers"
 import { ReifiedClient } from 'reified-client-api';
 
-const MAX_HEIGHT = 1000
+const MAX_HEIGHT = 1500
 // const API_ENDPOINTS = {
 //     organizations: "/api/v2/organizations.json",
 // }
