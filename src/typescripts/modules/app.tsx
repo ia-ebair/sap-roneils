@@ -1,72 +1,124 @@
 /**
  *  Example app
  **/
-import React from "react"
+import React, { useState, useEffect } from 'react';
 // eslint-disable-next-line react/no-deprecated
 import { render } from "react-dom"
 import { ThemeProvider, DEFAULT_THEME } from "@zendeskgarden/react-theming"
-import { Grid, Row, Col } from "@zendeskgarden/react-grid"
-import { UnorderedList } from "@zendeskgarden/react-typography"
-import { resizeContainer, escapeSpecialChars as escape } from "../lib/helpers"
+import { resizeContainer } from "../lib/helpers"
+import { ReifiedClient } from 'reified-client-api';
 
 const MAX_HEIGHT = 1000
-const API_ENDPOINTS = {
-    organizations: "/api/v2/organizations.json",
+// const API_ENDPOINTS = {
+//     organizations: "/api/v2/organizations.json",
+// }
+
+const fetchCatFact = async (): Promise<string | void> =>  {
+   const url = "https://catfact.ninja/fact";
+  try {
+    const response = await fetch(url, { headers: {"Content-Type": "application/json"} });
+    const json = await response.json();
+    console.log(json);
+    return await json.fact; 
+  } catch (error) {
+    console.error(error);
+    return
+  }
 }
 
+const Header: React.FC = () => (
+  <header className="mb-6">
+    <h1 className="text-3xl font-bold text-gray-800">My Data App</h1>
+  </header>
+);
+
+interface LabelProps {
+    result: string
+    darkMode: boolean
+}
+
+const Label: React.FC<LabelProps> = ({ result, darkMode }) => (
+  <div className={`p-4 rounded-lg shadow ${darkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-900'}`}>
+    <strong className="block text-lg">Result:</strong>
+    <span className="text-md">{result || "Loading..."}</span>
+  </div>
+);
+
+interface ButtonProps {
+    setResult: React.Dispatch<React.SetStateAction<string>>
+}
+
+const Button: React.FC<ButtonProps> = ({ setResult }) => (
+  <button 
+    onClick={() => setResult("Button was clicked!")}
+    className="mt-4 px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
+  >
+    Set Result Manually
+  </button>
+);
+
+const Counter: React.FC = () => {
+  const [count, setCount] = useState(0);
+  return (
+    <div className="mt-4 p-4 border border-gray-200 rounded-lg shadow-sm">
+      <p className="text-lg">Counter: <span className="font-mono bg-gray-100 px-2 py-1 rounded">{count}</span></p>
+      <button 
+        onClick={() => setCount(c => c + 1)}
+        className="mt-2 px-3 py-1 bg-green-500 text-white text-sm font-medium rounded-lg shadow hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-400"
+      >
+        Increment
+      </button>
+    </div>
+  );
+};
+
+const MainWindow: React.FC = () => {
+  const [result, setResult] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchCatFact();
+        if (typeof data === "string") {
+          setResult(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch data:", error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return (
+    <div className="p-8 max-w-lg mx-auto bg-gray-50 min-h-screen font-sans">
+      <Header />
+      <Label result={result} darkMode={true} />
+      <Button setResult={setResult}/>
+      <div>
+        <Counter />
+      </div>
+    </div>
+  );
+}
+
+
 class App {
-    _client: any
+    _client: ReifiedClient
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initializePromise: Promise<any>
 
-    constructor(client: any, appData: any) {
+    constructor(client: ReifiedClient) {
         this._client = client
-
-        // this.initializePromise is only used in testing
-        // indicate app initilization(including all async operations) is complete
         this.initializePromise = this.init()
     }
 
-    /**
-     * Initialize module, render main template
-     */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async init(): Promise<any> {
-        const currentUser = (await this._client.get("currentUser")).currentUser
-
-        const organizationsResponse = await this._client
-            .request(API_ENDPOINTS.organizations)
-            .catch(this._handleError.bind(this))
-
-        const organizations =
-            organizationsResponse != null
-                ? organizationsResponse.organizations
-                : []
-
         const appContainer = document.querySelector(".main")
 
         render(
             <ThemeProvider theme={{ ...DEFAULT_THEME }}>
-                <Grid>
-                    <Row>
-                        <Col data-test-id="sample-app-description">
-                            Hi {escape(currentUser.name)}, this is a sample app
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col>
-                            <span>default.organizations:</span>
-                            <UnorderedList data-test-id="organizations">
-                                {organizations.map((organization: any) => (
-                                    <UnorderedList.Item
-                                        key={`organization-${organization.id}`}
-                                        data-test-id={`organization-${organization.id}`}
-                                    >
-                                        {escape(organization.name)}
-                                    </UnorderedList.Item>
-                                ))}
-                            </UnorderedList>
-                        </Col>
-                    </Row>
-                </Grid>
+                <MainWindow />
             </ThemeProvider>,
             appContainer,
         )
@@ -77,7 +129,7 @@ class App {
      * Handle error
      * @param {Object} error error object
      */
-    _handleError(error: any): void {
+    _handleError(error: Error): void {
         console.log("An error is handled here: ", error.message)
     }
 }

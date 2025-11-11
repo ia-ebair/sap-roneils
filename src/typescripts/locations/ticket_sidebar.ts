@@ -1,9 +1,9 @@
 import App from "../modules/app"
+import { ReifiedClient, Core, Client } from "reified-client-api"
 
-declare const ZAFClient: any
+declare const ZAFClient: { init: () => Client }
+const client = new ReifiedClient(ZAFClient.init())
 
-const client = ZAFClient.init()
-
-client.on("app.registered", function (appData: any) {
-    return new App(client, appData)
+client.on(Core.Events.app.registered, () => {
+    return new App(client)
 })
